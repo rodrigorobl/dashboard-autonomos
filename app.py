@@ -191,9 +191,11 @@ def render_pj_tab(data):
         pairs = [(n, v) for n, v in zip(desp_names, desp_totals) if v > 0]
         if pairs:
             names, vals = zip(*pairs)
-            fig = px.pie(names=list(names), values=list(vals),
-                         title='Composição das Despesas')
-            fig.update_traces(textposition='inside', textinfo='percent+label')
+            fig = go.Figure(go.Pie(
+                labels=list(names), values=list(vals),
+                textposition='inside', textinfo='percent+label'
+            ))
+            fig.update_layout(title='Composição das Despesas')
             st.plotly_chart(fig, use_container_width=True)
 
     col_l2, col_r2 = st.columns(2)
@@ -222,15 +224,16 @@ def render_pj_tab(data):
         )
         if desp_sorted:
             names, vals = zip(*desp_sorted)
-            fig = px.bar(
+            fig = go.Figure(go.Bar(
                 x=list(vals), y=list(names),
                 orientation='h',
+                marker=dict(color=list(vals), colorscale='Reds', showscale=False)
+            ))
+            fig.update_layout(
                 title='Top Categorias de Despesa',
-                labels={'x': 'Total (R$)', 'y': ''},
-                color=list(vals),
-                color_continuous_scale='Reds'
+                xaxis_title='Total (R$)',
+                yaxis=dict(autorange='reversed')
             )
-            fig.update_layout(coloraxis_showscale=False, yaxis=dict(autorange='reversed'))
             st.plotly_chart(fig, use_container_width=True)
 
 
@@ -280,12 +283,12 @@ def render_pf_tab(data):
             if total > 0:
                 cat_totals[cat_name] = total
         if cat_totals:
-            fig = px.pie(
-                names=list(cat_totals.keys()),
+            fig = go.Figure(go.Pie(
+                labels=list(cat_totals.keys()),
                 values=list(cat_totals.values()),
-                title='Despesas por Categoria'
-            )
-            fig.update_traces(textposition='inside', textinfo='percent+label')
+                textposition='inside', textinfo='percent+label'
+            ))
+            fig.update_layout(title='Despesas por Categoria')
             st.plotly_chart(fig, use_container_width=True)
 
     col_l2, col_r2 = st.columns(2)
@@ -295,15 +298,16 @@ def render_pf_tab(data):
         if data['payment_totals']:
             pay_sorted = sorted(data['payment_totals'].items(), key=lambda x: x[1], reverse=True)
             methods, vals = zip(*pay_sorted)
-            fig = px.bar(
+            fig = go.Figure(go.Bar(
                 x=list(vals), y=list(methods),
                 orientation='h',
+                marker=dict(color=list(vals), colorscale='Blues', showscale=False)
+            ))
+            fig.update_layout(
                 title='Gastos por Meio de Pagamento',
-                labels={'x': 'Total (R$)', 'y': ''},
-                color=list(vals),
-                color_continuous_scale='Blues'
+                xaxis_title='Total (R$)',
+                yaxis=dict(autorange='reversed')
             )
-            fig.update_layout(coloraxis_showscale=False, yaxis=dict(autorange='reversed'))
             st.plotly_chart(fig, use_container_width=True)
 
     # Gráfico 4: Saldo mensal — Renda − Despesas (barras coloridas)
