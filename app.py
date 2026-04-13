@@ -234,7 +234,90 @@ def render_pj_tab(data):
 
 
 def render_pf_tab(data):
-    pass
+    # KPIs
+    total_renda = sum(data['renda'])
+    total_despesa = sum(data['totais_despesa'])
+    total_invest = sum(data['investimentos'])
+    meio_mais_usado = (
+        max(data['payment_totals'], key=data['payment_totals'].get)
+        if data['payment_totals'] else 'N/A'
+    )
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric('Renda Total', f"R$ {total_renda:,.0f}".replace(',', '.'))
+    col2.metric('Despesas Total', f"R$ {total_despesa:,.0f}".replace(',', '.'))
+    col3.metric('Investimentos', f"R$ {total_invest:,.0f}".replace(',', '.'))
+    col4.metric('Meio + Usado', meio_mais_usado)
+
+    st.divider()
+
+    col_l, col_r = st.columns(2)
+
+    # Gráfico 1: Renda vs Despesas por mês (barras agrupadas)
+    with col_l:
+        fig = go.Figure()
+        fig.add_bar(
+            x=data['months'], y=data['renda'],
+            name='Renda', marker_color='#4ade80'
+        )
+        fig.add_bar(
+            x=data['months'], y=data['totais_despesa'],
+            name='Despesas', marker_color='#f87171'
+        )
+        fig.update_layout(
+            title='Renda vs Despesas por Mês',
+            barmode='group',
+            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1)
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Gráfico 2: Despesas por categoria (pizza)
+    with col_r:
+        cat_totals = {}
+        for cat_name, items in data['categories'].items():
+            total = sum(sum(item['values']) for item in items.values())
+            if total > 0:
+                cat_totals[cat_name] = total
+        if cat_totals:
+            fig = px.pie(
+                names=list(cat_totals.keys()),
+                values=list(cat_totals.values()),
+                title='Despesas por Categoria'
+            )
+            fig.update_traces(textposition='inside', textinfo='percent+label')
+            st.plotly_chart(fig, use_container_width=True)
+
+    col_l2, col_r2 = st.columns(2)
+
+    # Gráfico 3: Gastos por meio de pagamento (barras horizontais)
+    with col_l2:
+        if data['payment_totals']:
+            pay_sorted = sorted(data['payment_totals'].items(), key=lambda x: x[1], reverse=True)
+            methods, vals = zip(*pay_sorted)
+            fig = px.bar(
+                x=list(vals), y=list(methods),
+                orientation='h',
+                title='Gastos por Meio de Pagamento',
+                labels={'x': 'Total (R$)', 'y': ''},
+                color=list(vals),
+                color_continuous_scale='Blues'
+            )
+            fig.update_layout(coloraxis_showscale=False, yaxis=dict(autorange='reversed'))
+            st.plotly_chart(fig, use_container_width=True)
+
+    # Gráfico 4: Saldo mensal — Renda − Despesas (barras coloridas)
+    with col_r2:
+        saldo = [r - d for r, d in zip(data['renda'], data['totais_despesa'])]
+        colors = ['#4ade80' if s >= 0 else '#f87171' for s in saldo]
+        fig = go.Figure(go.Bar(
+            x=data['months'], y=saldo,
+            marker_color=colors,
+            text=[f"R$ {s:,.0f}".replace(',', '.') for s in saldo],
+            textposition='outside'
+        ))
+        fig.add_hline(y=0, line_dash='dash', line_color='gray', opacity=0.5)
+        fig.update_layout(title='Saldo Mensal (Renda − Despesas)', yaxis_title='R$')
+        st.plotly_chart(fig, use_container_width=True)
 
 
 def main():
