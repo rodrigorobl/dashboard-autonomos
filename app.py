@@ -8,6 +8,11 @@ FILEPATH = 'dados/Planilha_de_Controle_de_Gastos_-_Autnomos.xlsx'
 MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
                'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 
+CATEGORY_HEADERS = {
+    'Alimentação', 'Moradia', 'Educação', 'Animal de Estimação',
+    'Saúde', 'Transporte', 'Pessoal', 'Lazer', 'Serviços Financeiros'
+}
+
 
 def format_month(dt):
     """Converte datetime para string 'Mmm/AA'. Retorna str(dt) se não for datetime."""
@@ -67,7 +72,78 @@ def load_pj_data(filepath):
 
 
 def load_pf_data(filepath):
-    pass
+    wb = openpyxl.load_workbook(filepath, data_only=True)
+    ws = wb['Pessoa Física']
+    rows = list(ws.iter_rows(values_only=True))
+    wb.close()
+
+    # Índices de valores mensais e meios de pagamento
+    val_indices = list(range(1, 25, 2))    # [1,3,5,...,23]
+    pay_indices = list(range(2, 26, 2))    # [2,4,6,...,24]
+
+    months = [format_month(rows[0][i]) for i in val_indices]
+
+    categories = {}
+    payment_totals = {}
+    totais_despesa = []
+    renda = []
+    resultado = []
+    investimentos = []
+    current_category = None
+
+    def get_vals(row):
+        return [row[i] if i < len(row) and row[i] is not None else 0 for i in val_indices]
+
+    def get_methods(row):
+        return [row[i] if i < len(row) and row[i] is not None else '' for i in pay_indices]
+
+    for row in rows[1:]:
+        if row[0] is None:
+            continue
+        name = str(row[0])
+
+        if name in ('Despedas', 'Despesas'):
+            continue
+        if name == 'Alterar somente os campos em azul':
+            continue
+
+        if name in CATEGORY_HEADERS:
+            current_category = name
+            categories[current_category] = {}
+            continue
+
+        if name == 'Total das Despesas':
+            totais_despesa = get_vals(row)
+            continue
+        if name == 'Renda Mensal':
+            renda = get_vals(row)
+            continue
+        if name.startswith('Resultado Operacional'):
+            resultado = get_vals(row)
+            continue
+        if name == 'Investimentos Mensais':
+            investimentos = get_vals(row)
+            continue
+
+        # Item de despesa
+        if current_category is not None:
+            vals = get_vals(row)
+            methods = get_methods(row)
+            categories[current_category][name] = {'values': vals, 'methods': methods}
+            # Acumular totais por meio de pagamento
+            for v, m in zip(vals, methods):
+                if m and v:
+                    payment_totals[m] = payment_totals.get(m, 0) + v
+
+    return {
+        'months': months,
+        'categories': categories,
+        'payment_totals': payment_totals,
+        'totais_despesa': totais_despesa,
+        'renda': renda,
+        'resultado': resultado,
+        'investimentos': investimentos,
+    }
 
 
 def render_pj_tab(data):
