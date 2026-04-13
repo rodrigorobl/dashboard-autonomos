@@ -2,6 +2,7 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 import openpyxl
+import os
 
 FILEPATH = 'dados/Planilha_de_Controle_de_Gastos_-_Autnomos.xlsx'
 
@@ -329,7 +330,6 @@ def main():
     st.title('Controle de Gastos — Autônomos')
     st.caption('Fonte: Planilha de Controle de Gastos — Autônomos (2018)')
 
-    import os
     if not os.path.exists(FILEPATH):
         st.error(f'Arquivo não encontrado: `{FILEPATH}`')
         st.stop()
