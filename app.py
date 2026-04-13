@@ -1,10 +1,124 @@
 import streamlit as st
-import plotly.express as px
 import plotly.graph_objects as go
 import openpyxl
 import os
 
 FILEPATH = 'dados/Planilha_de_Controle_de_Gastos_-_Autnomos.xlsx'
+
+# ── Paleta dark ──────────────────────────────────────────────────────────────
+C_BG       = '#0a0f1e'
+C_CARD     = '#111827'
+C_BORDER   = '#1f2937'
+C_CYAN     = '#00d4ff'
+C_GREEN    = '#10b981'
+C_RED      = '#ef4444'
+C_AMBER    = '#f59e0b'
+C_MUTED    = '#6b7280'
+C_TEXT     = '#e2e8f0'
+
+CHART_LAYOUT = dict(
+    paper_bgcolor='#111827',
+    plot_bgcolor='#111827',
+    font=dict(color=C_TEXT, family='IBM Plex Mono, monospace', size=12),
+    title_font=dict(color=C_TEXT, size=13),
+    xaxis=dict(gridcolor='#1f2937', linecolor='#374151',
+               tickfont=dict(color=C_MUTED, size=10), zeroline=False),
+    yaxis=dict(gridcolor='#1f2937', linecolor='#374151',
+               tickfont=dict(color=C_MUTED, size=10), zeroline=False),
+    legend=dict(bgcolor='rgba(0,0,0,0)', font=dict(color=C_MUTED)),
+    margin=dict(t=48, b=24, l=24, r=24),
+)
+
+
+def apply_theme():
+    st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
+
+    /* ── Fundo geral ── */
+    .stApp { background: #0a0f1e; }
+    .block-container { padding-top: 1.5rem !important; }
+
+    /* ── Título principal ── */
+    h1 {
+        font-family: 'Instrument Serif', serif !important;
+        font-size: 2.2rem !important;
+        letter-spacing: -0.02em;
+        background: linear-gradient(90deg, #e2e8f0 60%, #00d4ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* ── Caption / subtítulo ── */
+    .stMarkdown small, [data-testid="stCaptionContainer"] p {
+        font-family: 'IBM Plex Mono', monospace !important;
+        color: #4b5563 !important;
+        font-size: 0.7rem !important;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    /* ── Metric cards ── */
+    [data-testid="metric-container"] {
+        background: linear-gradient(145deg, #111827 0%, #0f1a2e 100%);
+        border: 1px solid #1f2937;
+        border-top: 2px solid #00d4ff;
+        border-radius: 10px;
+        padding: 1rem 1.2rem !important;
+        box-shadow: 0 4px 32px rgba(0,212,255,0.06);
+        transition: box-shadow 0.2s;
+    }
+    [data-testid="metric-container"]:hover {
+        box-shadow: 0 4px 32px rgba(0,212,255,0.18);
+    }
+    [data-testid="stMetricValue"] {
+        font-family: 'IBM Plex Mono', monospace !important;
+        font-size: 1.55rem !important;
+        font-weight: 600 !important;
+        color: #e2e8f0 !important;
+        letter-spacing: -0.02em;
+    }
+    [data-testid="stMetricLabel"] p {
+        font-family: 'IBM Plex Mono', monospace !important;
+        font-size: 0.68rem !important;
+        color: #4b5563 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    /* ── Divisor ── */
+    hr { border-color: #1f2937 !important; margin: 1rem 0 !important; }
+
+    /* ── Tabs ── */
+    .stTabs [data-baseweb="tab-list"] {
+        background: #111827 !important;
+        border-radius: 10px;
+        padding: 4px;
+        gap: 4px;
+        border: 1px solid #1f2937;
+    }
+    .stTabs [data-baseweb="tab"] {
+        font-family: 'IBM Plex Mono', monospace !important;
+        font-size: 0.8rem !important;
+        color: #6b7280 !important;
+        border-radius: 7px !important;
+        padding: 6px 20px !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background: #1f2937 !important;
+        color: #00d4ff !important;
+    }
+
+    /* ── Plotly charts — fundo ── */
+    .js-plotly-plot .plotly { border-radius: 10px; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0f1e; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+    </style>
+    """, unsafe_allow_html=True)
 
 MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
                'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
@@ -147,6 +261,11 @@ def load_pf_data(filepath):
     }
 
 
+def _apply_chart_layout(fig, title, **extra):
+    fig.update_layout(title=title, **{**CHART_LAYOUT, **extra})
+    return fig
+
+
 def render_pj_tab(data):
     # KPIs
     total_receita = sum(data['totais_receita'])
@@ -158,82 +277,93 @@ def render_pj_tab(data):
     col1, col2, col3, col4 = st.columns(4)
     col1.metric('Receita Total', f"R$ {total_receita:,.0f}".replace(',', '.'))
     col2.metric('Despesas Total', f"R$ {total_despesa:,.0f}".replace(',', '.'))
-    col3.metric('Resultado Operacional', f"R$ {resultado_total:,.0f}".replace(',', '.'))
+    sinal = '+' if resultado_total >= 0 else ''
+    col3.metric('Resultado Operacional', f"{sinal}R$ {resultado_total:,.0f}".replace(',', '.'))
     col4.metric('Melhor Mês', melhor_mes)
 
     st.divider()
 
     col_l, col_r = st.columns(2)
 
-    # Gráfico 1: Receitas vs Despesas por mês (barras agrupadas)
+    # Gráfico 1: Receitas vs Despesas por mês
     with col_l:
         fig = go.Figure()
-        fig.add_bar(
-            x=data['months'], y=data['totais_receita'],
-            name='Receitas', marker_color='#4ade80'
-        )
-        fig.add_bar(
-            x=data['months'], y=data['totais_despesa'],
-            name='Despesas', marker_color='#f87171'
-        )
-        fig.update_layout(
-            title='Receitas vs Despesas por Mês',
-            barmode='group',
-            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1)
-        )
+        fig.add_bar(x=data['months'], y=data['totais_receita'],
+                    name='Receitas', marker_color=C_GREEN, marker_opacity=0.9)
+        fig.add_bar(x=data['months'], y=data['totais_despesa'],
+                    name='Despesas', marker_color=C_RED, marker_opacity=0.9)
+        _apply_chart_layout(fig, 'Receitas vs Despesas por Mês',
+                            barmode='group',
+                            legend=dict(orientation='h', yanchor='bottom',
+                                        y=1.02, xanchor='right', x=1,
+                                        bgcolor='rgba(0,0,0,0)', font=dict(color=C_MUTED)))
         st.plotly_chart(fig, use_container_width=True)
 
-    # Gráfico 2: Composição das despesas (pizza)
+    # Gráfico 2: Composição das despesas (donut)
     with col_r:
         desp_names = list(data['despesas'].keys())
         desp_totals = [sum(data['despesas'][k]) for k in desp_names]
-        # Filtrar itens com valor zero
         pairs = [(n, v) for n, v in zip(desp_names, desp_totals) if v > 0]
         if pairs:
             names, vals = zip(*pairs)
             fig = go.Figure(go.Pie(
                 labels=list(names), values=list(vals),
-                textposition='inside', textinfo='percent+label'
+                hole=0.45,
+                textposition='inside', textinfo='percent',
+                marker=dict(colors=[
+                    '#00d4ff','#10b981','#f59e0b','#ef4444',
+                    '#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16'
+                ], line=dict(color='#0a0f1e', width=2))
             ))
-            fig.update_layout(title='Composição das Despesas')
+            fig.update_layout(
+                title='Composição das Despesas',
+                **{**CHART_LAYOUT,
+                   'legend': dict(bgcolor='rgba(0,0,0,0)', font=dict(color=C_MUTED, size=10))}
+            )
             st.plotly_chart(fig, use_container_width=True)
 
     col_l2, col_r2 = st.columns(2)
 
-    # Gráfico 3: Resultado Operacional por mês (linha)
+    # Gráfico 3: Resultado Operacional (linha com área)
     with col_l2:
-        colors = ['#4ade80' if v >= 0 else '#f87171' for v in data['resultado']]
-        fig = go.Figure(go.Scatter(
+        cores_res = [C_GREEN if v >= 0 else C_RED for v in data['resultado']]
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
             x=data['months'], y=data['resultado'],
             mode='lines+markers',
-            line=dict(color='#60a5fa', width=2),
-            marker=dict(color=colors, size=8)
+            line=dict(color=C_CYAN, width=2.5),
+            marker=dict(color=cores_res, size=9, line=dict(color='#0a0f1e', width=1.5)),
+            fill='tozeroy',
+            fillcolor='rgba(0,212,255,0.07)'
         ))
-        fig.add_hline(y=0, line_dash='dash', line_color='gray', opacity=0.5)
-        fig.update_layout(
-            title='Resultado Operacional por Mês',
-            yaxis_title='R$'
-        )
+        fig.add_hline(y=0, line_dash='dot', line_color=C_BORDER, opacity=0.8)
+        _apply_chart_layout(fig, 'Resultado Operacional por Mês',
+                            yaxis=dict(**CHART_LAYOUT['yaxis'], title='R$'))
         st.plotly_chart(fig, use_container_width=True)
 
-    # Gráfico 4: Top categorias de despesa (barras horizontais)
+    # Gráfico 4: Top despesas (barras horizontais com gradiente)
     with col_r2:
         desp_sorted = sorted(
-            [(n, sum(data['despesas'][n])) for n in data['despesas'] if sum(data['despesas'][n]) > 0],
+            [(n, sum(data['despesas'][n])) for n in data['despesas']
+             if sum(data['despesas'][n]) > 0],
             key=lambda x: x[1], reverse=True
         )
         if desp_sorted:
             names, vals = zip(*desp_sorted)
+            n = len(vals)
+            intensities = [0.4 + 0.6 * (i / max(n - 1, 1)) for i in range(n)]
+            bar_colors = [f'rgba(239,68,68,{v:.2f})' for v in intensities]
             fig = go.Figure(go.Bar(
                 x=list(vals), y=list(names),
                 orientation='h',
-                marker=dict(color=list(vals), colorscale='Reds', showscale=False)
+                marker=dict(color=bar_colors),
+                text=[f'R$ {v:,.0f}'.replace(',', '.') for v in vals],
+                textposition='outside',
+                textfont=dict(color=C_MUTED, size=10, family='IBM Plex Mono, monospace')
             ))
-            fig.update_layout(
-                title='Top Categorias de Despesa',
-                xaxis_title='Total (R$)',
-                yaxis=dict(autorange='reversed')
-            )
+            _apply_chart_layout(fig, 'Top Categorias de Despesa',
+                                xaxis=dict(**CHART_LAYOUT['xaxis'], title='Total (R$)'),
+                                yaxis=dict(**CHART_LAYOUT['yaxis'], autorange='reversed'))
             st.plotly_chart(fig, use_container_width=True)
 
 
@@ -257,25 +387,21 @@ def render_pf_tab(data):
 
     col_l, col_r = st.columns(2)
 
-    # Gráfico 1: Renda vs Despesas por mês (barras agrupadas)
+    # Gráfico 1: Renda vs Despesas por mês
     with col_l:
         fig = go.Figure()
-        fig.add_bar(
-            x=data['months'], y=data['renda'],
-            name='Renda', marker_color='#4ade80'
-        )
-        fig.add_bar(
-            x=data['months'], y=data['totais_despesa'],
-            name='Despesas', marker_color='#f87171'
-        )
-        fig.update_layout(
-            title='Renda vs Despesas por Mês',
-            barmode='group',
-            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1)
-        )
+        fig.add_bar(x=data['months'], y=data['renda'],
+                    name='Renda', marker_color=C_GREEN, marker_opacity=0.9)
+        fig.add_bar(x=data['months'], y=data['totais_despesa'],
+                    name='Despesas', marker_color=C_RED, marker_opacity=0.9)
+        _apply_chart_layout(fig, 'Renda vs Despesas por Mês',
+                            barmode='group',
+                            legend=dict(orientation='h', yanchor='bottom',
+                                        y=1.02, xanchor='right', x=1,
+                                        bgcolor='rgba(0,0,0,0)', font=dict(color=C_MUTED)))
         st.plotly_chart(fig, use_container_width=True)
 
-    # Gráfico 2: Despesas por categoria (pizza)
+    # Gráfico 2: Despesas por categoria (donut)
     with col_r:
         cat_totals = {}
         for cat_name, items in data['categories'].items():
@@ -286,51 +412,67 @@ def render_pf_tab(data):
             fig = go.Figure(go.Pie(
                 labels=list(cat_totals.keys()),
                 values=list(cat_totals.values()),
-                textposition='inside', textinfo='percent+label'
+                hole=0.45,
+                textposition='inside', textinfo='percent',
+                marker=dict(colors=[
+                    '#00d4ff','#10b981','#f59e0b','#ef4444',
+                    '#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4'
+                ], line=dict(color='#0a0f1e', width=2))
             ))
-            fig.update_layout(title='Despesas por Categoria')
+            fig.update_layout(
+                title='Despesas por Categoria',
+                **{**CHART_LAYOUT,
+                   'legend': dict(bgcolor='rgba(0,0,0,0)', font=dict(color=C_MUTED, size=10))}
+            )
             st.plotly_chart(fig, use_container_width=True)
 
     col_l2, col_r2 = st.columns(2)
 
-    # Gráfico 3: Gastos por meio de pagamento (barras horizontais)
+    # Gráfico 3: Gastos por meio de pagamento
     with col_l2:
         if data['payment_totals']:
             pay_sorted = sorted(data['payment_totals'].items(), key=lambda x: x[1], reverse=True)
             methods, vals = zip(*pay_sorted)
+            n = len(vals)
+            bar_colors = [f'rgba(0,212,255,{0.4 + 0.6*(i/max(n-1,1)):.2f})' for i in range(n)]
             fig = go.Figure(go.Bar(
                 x=list(vals), y=list(methods),
                 orientation='h',
-                marker=dict(color=list(vals), colorscale='Blues', showscale=False)
+                marker=dict(color=bar_colors),
+                text=[f'R$ {v:,.0f}'.replace(',', '.') for v in vals],
+                textposition='outside',
+                textfont=dict(color=C_MUTED, size=10, family='IBM Plex Mono, monospace')
             ))
-            fig.update_layout(
-                title='Gastos por Meio de Pagamento',
-                xaxis_title='Total (R$)',
-                yaxis=dict(autorange='reversed')
-            )
+            _apply_chart_layout(fig, 'Gastos por Meio de Pagamento',
+                                xaxis=dict(**CHART_LAYOUT['xaxis'], title='Total (R$)'),
+                                yaxis=dict(**CHART_LAYOUT['yaxis'], autorange='reversed'))
             st.plotly_chart(fig, use_container_width=True)
 
-    # Gráfico 4: Saldo mensal — Renda − Despesas (barras coloridas)
+    # Gráfico 4: Saldo mensal
     with col_r2:
         saldo = [r - d for r, d in zip(data['renda'], data['totais_despesa'])]
-        colors = ['#4ade80' if s >= 0 else '#f87171' for s in saldo]
+        cores_saldo = [C_GREEN if s >= 0 else C_RED for s in saldo]
         fig = go.Figure(go.Bar(
             x=data['months'], y=saldo,
-            marker_color=colors,
+            marker_color=cores_saldo,
             text=[f"R$ {s:,.0f}".replace(',', '.') for s in saldo],
-            textposition='outside'
+            textposition='outside',
+            textfont=dict(color=C_MUTED, size=10, family='IBM Plex Mono, monospace')
         ))
-        fig.add_hline(y=0, line_dash='dash', line_color='gray', opacity=0.5)
-        fig.update_layout(title='Saldo Mensal (Renda − Despesas)', yaxis_title='R$')
+        fig.add_hline(y=0, line_dash='dot', line_color=C_BORDER, opacity=0.8)
+        _apply_chart_layout(fig, 'Saldo Mensal (Renda − Despesas)',
+                            yaxis=dict(**CHART_LAYOUT['yaxis'], title='R$'))
         st.plotly_chart(fig, use_container_width=True)
 
 
 def main():
     st.set_page_config(
         page_title='Dashboard Autônomos',
+        page_icon='📊',
         layout='wide',
         initial_sidebar_state='collapsed'
     )
+    apply_theme()
     st.title('Controle de Gastos — Autônomos')
     st.caption('Fonte: Planilha de Controle de Gastos — Autônomos (2018)')
 
