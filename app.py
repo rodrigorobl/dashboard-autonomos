@@ -17,7 +17,52 @@ def format_month(dt):
 
 
 def load_pj_data(filepath):
-    pass
+    wb = openpyxl.load_workbook(filepath, data_only=True)
+    ws = wb['Pessoa Jurídica']
+    rows = list(ws.iter_rows(values_only=True))
+
+    months = [format_month(r) for r in rows[0][1:]]
+
+    receitas = {}
+    despesas = {}
+    totais_receita = []
+    totais_despesa = []
+    resultado = []
+    current_section = None
+
+    for row in rows[1:]:
+        if row[0] is None:
+            continue
+        name = str(row[0])
+        values = [v if v is not None else 0 for v in row[1:]]
+
+        if name == 'Receitas':
+            current_section = 'receitas'
+        elif name == 'Despesas':
+            current_section = 'despesas'
+        elif name == 'Total de Receitas':
+            totais_receita = values
+        elif name == 'Total das Despesas':
+            totais_despesa = values
+        elif name.startswith('Resultado Operacional'):
+            resultado = values
+        elif name.startswith('Alterar'):
+            continue
+        elif name.startswith('- '):
+            item_name = name[2:]
+            if current_section == 'receitas':
+                receitas[item_name] = values
+            elif current_section == 'despesas':
+                despesas[item_name] = values
+
+    return {
+        'months': months,
+        'receitas': receitas,
+        'despesas': despesas,
+        'totais_receita': totais_receita,
+        'totais_despesa': totais_despesa,
+        'resultado': resultado,
+    }
 
 
 def load_pf_data(filepath):
