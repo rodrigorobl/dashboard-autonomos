@@ -20,8 +20,9 @@ def load_pj_data(filepath):
     wb = openpyxl.load_workbook(filepath, data_only=True)
     ws = wb['Pessoa Jurídica']
     rows = list(ws.iter_rows(values_only=True))
+    wb.close()
 
-    months = [format_month(r) for r in rows[0][1:]]
+    months = [format_month(r) for r in rows[0][1:13]]
 
     receitas = {}
     despesas = {}
@@ -34,7 +35,7 @@ def load_pj_data(filepath):
         if row[0] is None:
             continue
         name = str(row[0])
-        values = [v if v is not None else 0 for v in row[1:]]
+        values = [v if v is not None else 0 for v in row[1:len(months)+1]]
 
         if name == 'Receitas':
             current_section = 'receitas'
