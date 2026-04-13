@@ -321,13 +321,23 @@ def render_pf_tab(data):
 
 
 def main():
-    st.set_page_config(page_title='Dashboard Autônomos', layout='wide')
+    st.set_page_config(
+        page_title='Dashboard Autônomos',
+        layout='wide',
+        initial_sidebar_state='collapsed'
+    )
     st.title('Controle de Gastos — Autônomos')
+    st.caption('Fonte: Planilha de Controle de Gastos — Autônomos (2018)')
+
+    import os
+    if not os.path.exists(FILEPATH):
+        st.error(f'Arquivo não encontrado: `{FILEPATH}`')
+        st.stop()
 
     pj_data = load_pj_data(FILEPATH)
     pf_data = load_pf_data(FILEPATH)
 
-    tab_pj, tab_pf = st.tabs(['Pessoa Jurídica', 'Pessoa Física'])
+    tab_pj, tab_pf = st.tabs(['📊 Pessoa Jurídica', '🏠 Pessoa Física'])
     with tab_pj:
         render_pj_tab(pj_data)
     with tab_pf:
