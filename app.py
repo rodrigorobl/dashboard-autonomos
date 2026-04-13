@@ -5,25 +5,27 @@ import os
 
 FILEPATH = 'dados/Planilha_de_Controle_de_Gastos_-_Autnomos.xlsx'
 
-# ── Paleta dark ──────────────────────────────────────────────────────────────
-C_BG       = '#0a0f1e'
-C_CARD     = '#111827'
-C_BORDER   = '#1f2937'
-C_CYAN     = '#00d4ff'
-C_GREEN    = '#10b981'
-C_RED      = '#ef4444'
-C_AMBER    = '#f59e0b'
-C_MUTED    = '#6b7280'
-C_TEXT     = '#e2e8f0'
+# ── Paleta corporativa ───────────────────────────────────────────────────────
+C_BG       = '#f8fafc'
+C_CARD     = '#ffffff'
+C_BORDER   = '#e2e8f0'
+C_BLUE     = '#1e3a8a'
+C_BLUE_L   = '#3b82f6'
+C_GREEN    = '#16a34a'
+C_RED      = '#dc2626'
+C_AMBER    = '#d97706'
+C_MUTED    = '#64748b'
+C_TEXT     = '#1e293b'
+C_CYAN     = '#0284c7'
 
 CHART_LAYOUT = dict(
-    paper_bgcolor='#111827',
-    plot_bgcolor='#111827',
-    font=dict(color=C_TEXT, family='IBM Plex Mono, monospace', size=12),
-    title_font=dict(color=C_TEXT, size=13),
-    xaxis=dict(gridcolor='#1f2937', linecolor='#374151',
+    paper_bgcolor='#ffffff',
+    plot_bgcolor='#ffffff',
+    font=dict(color=C_TEXT, family='Inter, sans-serif', size=12),
+    title_font=dict(color=C_TEXT, size=13, family='Inter, sans-serif'),
+    xaxis=dict(gridcolor='#f1f5f9', linecolor='#e2e8f0',
                tickfont=dict(color=C_MUTED, size=10), zeroline=False),
-    yaxis=dict(gridcolor='#1f2937', linecolor='#374151',
+    yaxis=dict(gridcolor='#f1f5f9', linecolor='#e2e8f0',
                tickfont=dict(color=C_MUTED, size=10), zeroline=False),
     legend=dict(bgcolor='rgba(0,0,0,0)', font=dict(color=C_MUTED)),
     margin=dict(t=48, b=24, l=24, r=24),
@@ -33,100 +35,79 @@ CHART_LAYOUT = dict(
 def apply_theme():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    /* ── Reset completo do Streamlit ── */
-    html, body, [class*="css"], .stApp,
-    .stApp > div, section[data-testid="stSidebar"],
-    .main, .main > div { background-color: #0a0f1e !important; }
+    html, body, [class*="css"], .stApp, .main, .main > div {
+        background-color: #f8fafc !important;
+        font-family: 'Inter', sans-serif !important;
+    }
 
     .block-container {
         padding-top: 2rem !important;
-        max-width: 1200px !important;
-    }
-
-    /* ── Título ── */
-    h1, h1 * {
-        font-family: 'Syne', sans-serif !important;
-        font-weight: 800 !important;
-        font-size: 2.4rem !important;
-        letter-spacing: -0.03em !important;
-        color: #e2e8f0 !important;
-        padding-bottom: 0 !important;
-    }
-
-    /* ── Caption ── */
-    p small, .stCaption, .stCaption p, caption {
-        font-family: 'IBM Plex Mono', monospace !important;
-        color: #374151 !important;
-        font-size: 0.68rem !important;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
+        max-width: 1280px !important;
     }
 
     /* ── Tabs ── */
     div[data-baseweb="tab-list"] {
-        background: #111827 !important;
-        border-radius: 12px !important;
-        padding: 4px !important;
-        border: 1px solid #1f2937 !important;
+        background: #ffffff !important;
+        border-radius: 8px !important;
+        padding: 3px !important;
+        border: 1px solid #e2e8f0 !important;
         gap: 2px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
     }
     button[data-baseweb="tab"] {
-        font-family: 'IBM Plex Mono', monospace !important;
-        font-size: 0.78rem !important;
-        color: #4b5563 !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.82rem !important;
+        font-weight: 500 !important;
+        color: #64748b !important;
         background: transparent !important;
-        border-radius: 8px !important;
-        padding: 6px 22px !important;
+        border-radius: 6px !important;
+        padding: 7px 24px !important;
         border: none !important;
-        transition: all 0.2s !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] {
-        background: #1e3a5f !important;
-        color: #00d4ff !important;
+        background: #1e3a8a !important;
+        color: #ffffff !important;
     }
     div[data-baseweb="tab-highlight"] { display: none !important; }
     div[data-baseweb="tab-border"] { display: none !important; }
 
     /* ── Divider ── */
-    hr { border-color: #1f2937 !important; margin: 1.2rem 0 !important; }
+    hr { border-color: #e2e8f0 !important; margin: 1.4rem 0 !important; }
 
     /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #0a0f1e; }
-    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #374151; }
-
-    /* ── Plotly border-radius ── */
-    .js-plotly-plot, .plotly { border-radius: 12px !important; overflow: hidden; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     </style>
     """, unsafe_allow_html=True)
 
 
-def kpi_card(label: str, value: str, accent: str = '#00d4ff') -> str:
-    """Retorna HTML de um card KPI customizado."""
+def kpi_card(label: str, value: str, accent: str = '#1e3a8a') -> str:
+    """Retorna HTML de um card KPI corporativo."""
     return f"""
     <div style="
-        background: linear-gradient(145deg,#111827 0%,#0d1628 100%);
-        border: 1px solid #1f2937;
-        border-top: 3px solid {accent};
-        border-radius: 12px;
-        padding: 1.1rem 1.3rem;
-        box-shadow: 0 2px 24px rgba(0,0,0,0.4);
-        font-family: 'IBM Plex Mono', monospace;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid {accent};
+        border-radius: 8px;
+        padding: 1.1rem 1.4rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        font-family: 'Inter', sans-serif;
     ">
       <div style="
-        font-size: 0.62rem;
-        color: #4b5563;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #94a3b8;
         text-transform: uppercase;
-        letter-spacing: 0.12em;
-        margin-bottom: 0.5rem;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.55rem;
       ">{label}</div>
       <div style="
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #e2e8f0;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #1e293b;
         letter-spacing: -0.02em;
         line-height: 1;
       ">{value}</div>
@@ -332,9 +313,9 @@ def render_pj_tab(data):
                 hole=0.45,
                 textposition='inside', textinfo='percent',
                 marker=dict(colors=[
-                    '#00d4ff','#10b981','#f59e0b','#ef4444',
-                    '#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16'
-                ], line=dict(color='#0a0f1e', width=2))
+                    '#1e3a8a','#3b82f6','#0284c7','#0ea5e9',
+                    '#16a34a','#22c55e','#d97706','#dc2626','#7c3aed','#64748b'
+                ], line=dict(color='#ffffff', width=2))
             ))
             fig.update_layout(
                 title='Composição das Despesas',
@@ -352,12 +333,12 @@ def render_pj_tab(data):
         fig.add_trace(go.Scatter(
             x=data['months'], y=data['resultado'],
             mode='lines+markers',
-            line=dict(color=C_CYAN, width=2.5),
-            marker=dict(color=cores_res, size=9, line=dict(color='#0a0f1e', width=1.5)),
+            line=dict(color=C_BLUE, width=2.5),
+            marker=dict(color=cores_res, size=9, line=dict(color='#ffffff', width=1.5)),
             fill='tozeroy',
-            fillcolor='rgba(0,212,255,0.07)'
+            fillcolor='rgba(30,58,138,0.06)'
         ))
-        fig.add_hline(y=0, line_dash='dot', line_color=C_BORDER, opacity=0.8)
+        fig.add_hline(y=0, line_dash='dot', line_color='#cbd5e1', opacity=0.8)
         _apply_chart_layout(fig, 'Resultado Operacional por Mês',
                             yaxis=dict(**CHART_LAYOUT['yaxis'], title='R$'))
         st.plotly_chart(fig, use_container_width=True)
@@ -373,7 +354,7 @@ def render_pj_tab(data):
             names, vals = zip(*desp_sorted)
             n = len(vals)
             intensities = [0.4 + 0.6 * (i / max(n - 1, 1)) for i in range(n)]
-            bar_colors = [f'rgba(239,68,68,{v:.2f})' for v in intensities]
+            bar_colors = [f'rgba(30,58,138,{v:.2f})' for v in intensities]
             fig = go.Figure(go.Bar(
                 x=list(vals), y=list(names),
                 orientation='h',
@@ -462,7 +443,7 @@ def render_pf_tab(data):
             pay_sorted = sorted(data['payment_totals'].items(), key=lambda x: x[1], reverse=True)
             methods, vals = zip(*pay_sorted)
             n = len(vals)
-            bar_colors = [f'rgba(0,212,255,{0.4 + 0.6*(i/max(n-1,1)):.2f})' for i in range(n)]
+            bar_colors = [f'rgba(2,132,199,{0.4 + 0.6*(i/max(n-1,1)):.2f})' for i in range(n)]
             fig = go.Figure(go.Bar(
                 x=list(vals), y=list(methods),
                 orientation='h',
@@ -487,7 +468,7 @@ def render_pf_tab(data):
             textposition='outside',
             textfont=dict(color=C_MUTED, size=10, family='IBM Plex Mono, monospace')
         ))
-        fig.add_hline(y=0, line_dash='dot', line_color=C_BORDER, opacity=0.8)
+        fig.add_hline(y=0, line_dash='dot', line_color='#cbd5e1', opacity=0.8)
         _apply_chart_layout(fig, 'Saldo Mensal (Renda − Despesas)',
                             yaxis=dict(**CHART_LAYOUT['yaxis'], title='R$'))
         st.plotly_chart(fig, use_container_width=True)
@@ -502,18 +483,27 @@ def main():
     )
     apply_theme()
     st.markdown("""
-    <div style="margin-bottom:0.2rem">
-      <h1 style="
-        font-family:'Syne',sans-serif;font-weight:800;font-size:2.3rem;
-        letter-spacing:-0.03em;margin:0;padding:0;
-        background:linear-gradient(90deg,#e2e8f0 55%,#00d4ff 100%);
-        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-        background-clip:text;
-      ">Controle de Gastos — Autônomos</h1>
-      <p style="
-        font-family:'IBM Plex Mono',monospace;font-size:0.65rem;
-        color:#374151;letter-spacing:0.14em;text-transform:uppercase;margin-top:4px;
-      ">Fonte: Planilha de Controle de Gastos — Autônomos · 2018</p>
+    <div style="
+        background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;
+        padding:1.2rem 1.6rem;margin-bottom:1.2rem;
+        box-shadow:0 1px 4px rgba(0,0,0,0.05);
+        display:flex;align-items:center;justify-content:space-between;
+    ">
+      <div>
+        <div style="
+            font-family:'Inter',sans-serif;font-weight:700;font-size:1.4rem;
+            color:#1e293b;letter-spacing:-0.01em;margin-bottom:2px;
+        ">Controle de Gastos — Autônomos</div>
+        <div style="
+            font-family:'Inter',sans-serif;font-size:0.75rem;
+            color:#94a3b8;font-weight:400;
+        ">Planilha de Controle de Gastos · 2018</div>
+      </div>
+      <div style="
+          background:#1e3a8a;color:#ffffff;font-family:'Inter',sans-serif;
+          font-size:0.72rem;font-weight:600;padding:5px 14px;border-radius:20px;
+          letter-spacing:0.02em;
+      ">FINANCEIRO</div>
     </div>
     """, unsafe_allow_html=True)
 
