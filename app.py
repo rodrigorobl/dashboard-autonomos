@@ -33,92 +33,105 @@ CHART_LAYOUT = dict(
 def apply_theme():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap');
 
-    /* ── Fundo geral ── */
-    .stApp { background: #0a0f1e; }
-    .block-container { padding-top: 1.5rem !important; }
+    /* ── Reset completo do Streamlit ── */
+    html, body, [class*="css"], .stApp,
+    .stApp > div, section[data-testid="stSidebar"],
+    .main, .main > div { background-color: #0a0f1e !important; }
 
-    /* ── Título principal ── */
-    h1 {
-        font-family: 'Instrument Serif', serif !important;
-        font-size: 2.2rem !important;
-        letter-spacing: -0.02em;
-        background: linear-gradient(90deg, #e2e8f0 60%, #00d4ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+    .block-container {
+        padding-top: 2rem !important;
+        max-width: 1200px !important;
     }
 
-    /* ── Caption / subtítulo ── */
-    .stMarkdown small, [data-testid="stCaptionContainer"] p {
-        font-family: 'IBM Plex Mono', monospace !important;
-        color: #4b5563 !important;
-        font-size: 0.7rem !important;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-    }
-
-    /* ── Metric cards ── */
-    [data-testid="metric-container"] {
-        background: linear-gradient(145deg, #111827 0%, #0f1a2e 100%);
-        border: 1px solid #1f2937;
-        border-top: 2px solid #00d4ff;
-        border-radius: 10px;
-        padding: 1rem 1.2rem !important;
-        box-shadow: 0 4px 32px rgba(0,212,255,0.06);
-        transition: box-shadow 0.2s;
-    }
-    [data-testid="metric-container"]:hover {
-        box-shadow: 0 4px 32px rgba(0,212,255,0.18);
-    }
-    [data-testid="stMetricValue"] {
-        font-family: 'IBM Plex Mono', monospace !important;
-        font-size: 1.55rem !important;
-        font-weight: 600 !important;
+    /* ── Título ── */
+    h1, h1 * {
+        font-family: 'Syne', sans-serif !important;
+        font-weight: 800 !important;
+        font-size: 2.4rem !important;
+        letter-spacing: -0.03em !important;
         color: #e2e8f0 !important;
-        letter-spacing: -0.02em;
-    }
-    [data-testid="stMetricLabel"] p {
-        font-family: 'IBM Plex Mono', monospace !important;
-        font-size: 0.68rem !important;
-        color: #4b5563 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
+        padding-bottom: 0 !important;
     }
 
-    /* ── Divisor ── */
-    hr { border-color: #1f2937 !important; margin: 1rem 0 !important; }
+    /* ── Caption ── */
+    p small, .stCaption, .stCaption p, caption {
+        font-family: 'IBM Plex Mono', monospace !important;
+        color: #374151 !important;
+        font-size: 0.68rem !important;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
 
     /* ── Tabs ── */
-    .stTabs [data-baseweb="tab-list"] {
+    div[data-baseweb="tab-list"] {
         background: #111827 !important;
-        border-radius: 10px;
-        padding: 4px;
-        gap: 4px;
-        border: 1px solid #1f2937;
+        border-radius: 12px !important;
+        padding: 4px !important;
+        border: 1px solid #1f2937 !important;
+        gap: 2px !important;
     }
-    .stTabs [data-baseweb="tab"] {
+    button[data-baseweb="tab"] {
         font-family: 'IBM Plex Mono', monospace !important;
-        font-size: 0.8rem !important;
-        color: #6b7280 !important;
-        border-radius: 7px !important;
-        padding: 6px 20px !important;
+        font-size: 0.78rem !important;
+        color: #4b5563 !important;
+        background: transparent !important;
+        border-radius: 8px !important;
+        padding: 6px 22px !important;
+        border: none !important;
+        transition: all 0.2s !important;
     }
-    .stTabs [aria-selected="true"] {
-        background: #1f2937 !important;
+    button[data-baseweb="tab"][aria-selected="true"] {
+        background: #1e3a5f !important;
         color: #00d4ff !important;
     }
+    div[data-baseweb="tab-highlight"] { display: none !important; }
+    div[data-baseweb="tab-border"] { display: none !important; }
 
-    /* ── Plotly charts — fundo ── */
-    .js-plotly-plot .plotly { border-radius: 10px; }
+    /* ── Divider ── */
+    hr { border-color: #1f2937 !important; margin: 1.2rem 0 !important; }
 
     /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #0a0f1e; }
-    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #374151; }
+
+    /* ── Plotly border-radius ── */
+    .js-plotly-plot, .plotly { border-radius: 12px !important; overflow: hidden; }
     </style>
     """, unsafe_allow_html=True)
+
+
+def kpi_card(label: str, value: str, accent: str = '#00d4ff') -> str:
+    """Retorna HTML de um card KPI customizado."""
+    return f"""
+    <div style="
+        background: linear-gradient(145deg,#111827 0%,#0d1628 100%);
+        border: 1px solid #1f2937;
+        border-top: 3px solid {accent};
+        border-radius: 12px;
+        padding: 1.1rem 1.3rem;
+        box-shadow: 0 2px 24px rgba(0,0,0,0.4);
+        font-family: 'IBM Plex Mono', monospace;
+    ">
+      <div style="
+        font-size: 0.62rem;
+        color: #4b5563;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 0.5rem;
+      ">{label}</div>
+      <div style="
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #e2e8f0;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      ">{value}</div>
+    </div>
+    """
 
 MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
                'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
@@ -274,12 +287,20 @@ def render_pj_tab(data):
     melhor_idx = data['resultado'].index(max(data['resultado']))
     melhor_mes = data['months'][melhor_idx]
 
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric('Receita Total', f"R$ {total_receita:,.0f}".replace(',', '.'))
-    col2.metric('Despesas Total', f"R$ {total_despesa:,.0f}".replace(',', '.'))
     sinal = '+' if resultado_total >= 0 else ''
-    col3.metric('Resultado Operacional', f"{sinal}R$ {resultado_total:,.0f}".replace(',', '.'))
-    col4.metric('Melhor Mês', melhor_mes)
+    cor_resultado = C_GREEN if resultado_total >= 0 else C_RED
+    col1, col2, col3, col4 = st.columns(4)
+    col1.markdown(kpi_card('Receita Total',
+                            f"R$ {total_receita:,.0f}".replace(',', '.'), C_GREEN),
+                  unsafe_allow_html=True)
+    col2.markdown(kpi_card('Despesas Total',
+                            f"R$ {total_despesa:,.0f}".replace(',', '.'), C_RED),
+                  unsafe_allow_html=True)
+    col3.markdown(kpi_card('Resultado Operacional',
+                            f"{sinal}R$ {resultado_total:,.0f}".replace(',', '.'), cor_resultado),
+                  unsafe_allow_html=True)
+    col4.markdown(kpi_card('Melhor Mês', melhor_mes, C_CYAN),
+                  unsafe_allow_html=True)
 
     st.divider()
 
@@ -378,10 +399,17 @@ def render_pf_tab(data):
     )
 
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric('Renda Total', f"R$ {total_renda:,.0f}".replace(',', '.'))
-    col2.metric('Despesas Total', f"R$ {total_despesa:,.0f}".replace(',', '.'))
-    col3.metric('Investimentos', f"R$ {total_invest:,.0f}".replace(',', '.'))
-    col4.metric('Meio + Usado', meio_mais_usado)
+    col1.markdown(kpi_card('Renda Total',
+                            f"R$ {total_renda:,.0f}".replace(',', '.'), C_GREEN),
+                  unsafe_allow_html=True)
+    col2.markdown(kpi_card('Despesas Total',
+                            f"R$ {total_despesa:,.0f}".replace(',', '.'), C_RED),
+                  unsafe_allow_html=True)
+    col3.markdown(kpi_card('Investimentos',
+                            f"R$ {total_invest:,.0f}".replace(',', '.'), C_AMBER),
+                  unsafe_allow_html=True)
+    col4.markdown(kpi_card('Meio + Usado', meio_mais_usado, C_CYAN),
+                  unsafe_allow_html=True)
 
     st.divider()
 
@@ -473,8 +501,21 @@ def main():
         initial_sidebar_state='collapsed'
     )
     apply_theme()
-    st.title('Controle de Gastos — Autônomos')
-    st.caption('Fonte: Planilha de Controle de Gastos — Autônomos (2018)')
+    st.markdown("""
+    <div style="margin-bottom:0.2rem">
+      <h1 style="
+        font-family:'Syne',sans-serif;font-weight:800;font-size:2.3rem;
+        letter-spacing:-0.03em;margin:0;padding:0;
+        background:linear-gradient(90deg,#e2e8f0 55%,#00d4ff 100%);
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+        background-clip:text;
+      ">Controle de Gastos — Autônomos</h1>
+      <p style="
+        font-family:'IBM Plex Mono',monospace;font-size:0.65rem;
+        color:#374151;letter-spacing:0.14em;text-transform:uppercase;margin-top:4px;
+      ">Fonte: Planilha de Controle de Gastos — Autônomos · 2018</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     if not os.path.exists(FILEPATH):
         st.error(f'Arquivo não encontrado: `{FILEPATH}`')
