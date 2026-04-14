@@ -507,12 +507,24 @@ def main():
     </div>
     """, unsafe_allow_html=True)
 
-    if not os.path.exists(FILEPATH):
-        st.error(f'Arquivo não encontrado: `{FILEPATH}`')
+    # ── Fonte de dados ───────────────────────────────────────────────────────
+    uploaded = st.sidebar.file_uploader(
+        'Atualizar planilha',
+        type=['xlsx'],
+        help='Faça upload de uma nova versão da planilha para atualizar o dashboard.'
+    )
+
+    if uploaded is not None:
+        source = uploaded
+    elif os.path.exists(FILEPATH):
+        source = FILEPATH
+    else:
+        st.sidebar.warning('Nenhuma planilha encontrada.')
+        st.info('Use o painel lateral para fazer upload da planilha (.xlsx).')
         st.stop()
 
-    pj_data = load_pj_data(FILEPATH)
-    pf_data = load_pf_data(FILEPATH)
+    pj_data = load_pj_data(source)
+    pf_data = load_pf_data(source)
 
     tab_pj, tab_pf = st.tabs(['📊 Pessoa Jurídica', '🏠 Pessoa Física'])
     with tab_pj:
